@@ -1,0 +1,129 @@
+<div class="min-h-screen bg-[#57574d] flex items-center justify-center py-8 px-2">
+    <div class="bg-[#45453e] rounded-2xl p-8 w-full max-w-xl flex flex-col gap-8 shadow-lg">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-4">
+            <h1 class="text-4xl font-bold text-white" style="font-family: 'Orbitron', sans-serif;">
+                Trip Days Details
+            </h1>
+        </div>
+
+        <!-- Form for adding a day -->
+        <form (ngSubmit)="addDay()" class="bg-[#e3e3e3] rounded-lg shadow p-6 flex flex-col gap-4" autocomplete="off">
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Trip Name</label>
+                <input [(ngModel)]="form.tripName" name="tripName" required class="w-full rounded-lg border-gray-300 px-3 py-2" placeholder="e.g. Golden Triangle Tour" />
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Description</label>
+                <textarea [(ngModel)]="form.description" name="description" rows="2" required class="w-full rounded-lg border-gray-300 px-3 py-2" placeholder="Short description"></textarea>
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Days</label>
+                <input type="number" [(ngModel)]="form.days" name="days" required class="w-full rounded-lg border-gray-300 px-3 py-2" placeholder="e.g. 5" />
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Add Day</label>
+                <input type="number" [(ngModel)]="form.dayNumber" name="dayNumber" required class="w-full rounded-lg border-gray-300 px-3 py-2" placeholder="e.g. 1" />
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Date</label>
+                <input type="date" [(ngModel)]="form.date" name="date" required class="w-full rounded-lg border-gray-300 px-3 py-2" />
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Places</label>
+                <input [(ngModel)]="form.places" name="places" required class="w-full rounded-lg border-gray-300 px-3 py-2" placeholder="e.g. Agra, Delhi, Jaipur" />
+            </div>
+            <div class="flex gap-4 justify-end mt-2">
+                <button type="submit" class="bg-[#66645a] text-white px-6 py-2 rounded-lg hover:bg-[#57574d] transition">
+          Add Day
+        </button>
+            </div>
+        </form>
+
+        <!-- List of days added locally -->
+        <div *ngIf="pendingDays.length > 0" class="bg-[#e3e3e3] rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4 text-[#45453e]">Days to be Added</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-[#d6cdbb]">
+                            <th class="px-4 py-2 text-left">Trip Name</th>
+                            <th class="px-4 py-2 text-left">Description</th>
+                            <th class="px-4 py-2 text-left">Days</th>
+                            <th class="px-4 py-2 text-left">Day #</th>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Places</th>
+                            <th class="px-4 py-2 text-left">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let d of pendingDays; let i = index">
+                            <td class="px-4 py-2">{{ d.tripName }}</td>
+                            <td class="px-4 py-2">{{ d.description }}</td>
+                            <td class="px-4 py-2">{{ d.days }}</td>
+                            <td class="px-4 py-2">{{ d.dayNumber }}</td>
+                            <td class="px-4 py-2">{{ d.date }}</td>
+                            <td class="px-4 py-2">{{ d.places }}</td>
+                            <td class="px-4 py-2">
+                                <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" (click)="removePendingDay(i)">Remove</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex gap-4 justify-end mt-4">
+                <button (click)="submitAllDays()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+          Save
+        </button>
+            </div>
+        </div>
+
+        <!-- Details List (from backend) -->
+        <div *ngIf="details.length > 0" class="bg-[#e3e3e3] rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4 text-[#45453e]">Saved Days</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-[#d6cdbb]">
+                            <th class="px-4 py-2 text-left">Trip Name</th>
+                            <th class="px-4 py-2 text-left">Description</th>
+                            <th class="px-4 py-2 text-left">Days</th>
+                            <th class="px-4 py-2 text-left">Day #</th>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Places</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let d of details">
+                            <ng-container *ngIf="!editRow || editRow.id !== d.id; else editTemplate">
+                                <td class="px-4 py-2">{{ d.tripName }}</td>
+                                <td class="px-4 py-2">{{ d.description }}</td>
+                                <td class="px-4 py-2">{{ d.days }}</td>
+                                <td class="px-4 py-2">{{ d.dayNumber }}</td>
+                                <td class="px-4 py-2">{{ d.date }}</td>
+                                <td class="px-4 py-2">{{ d.places }}</td>
+                                <td class="px-4 py-2 flex gap-2">
+                                    <button class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600" (click)="startEdit(d)">Edit</button>
+                                    <button class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600" (click)="deleteDetail(d.id!)">Delete</button>
+                                </td>
+                            </ng-container>
+                            <ng-template #editTemplate>
+                                <td class="px-4 py-2"><input [(ngModel)]="editRow!.tripName" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2"><input [(ngModel)]="editRow!.description" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2"><input type="number" [(ngModel)]="editRow!.days" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2"><input type="number" [(ngModel)]="editRow!.dayNumber" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2"><input type="date" [(ngModel)]="editRow!.date" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2"><input [(ngModel)]="editRow!.places" class="rounded px-2 py-1 border" /></td>
+                                <td class="px-4 py-2 flex gap-2">
+                                    <button class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600" (click)="saveEdit()">Save</button>
+                                    <button class="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600" (click)="cancelEdit()">Cancel</button>
+                                </td>
+                            </ng-template>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
